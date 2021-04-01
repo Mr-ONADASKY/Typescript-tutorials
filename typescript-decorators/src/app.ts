@@ -1,51 +1,63 @@
-/* eslint-disable @typescript-eslint/ban-types */
-function logClass(message: string): ClassDecorator {
-  console.log(`${message} evaluated`);
+import APIServer from './APIServer';
+import { Request, Response } from 'express';
 
-  return function (constructor): void {
-    console.log(`${message} called`, constructor);
-  };
-}
+const server = new APIServer();
 
-function logProperty(message: string): PropertyDecorator {
-  console.log(`${message} evaluated`);
-
-  return function (target: Object, propertyKey: string) {
-    console.log(`${message} called`);
-  };
-}
-
-function logMethod(message: string): MethodDecorator {
-  console.log(`${message} evaluated`);
-
-  return function (target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
-    console.log(`${message} called`);
-  };
-}
-
-function logParameter(message: string): ParameterDecorator {
-  console.log(`${message} evaluated`);
-
-  return function (target: Object, propertyKey: string, parameterIndex: number) {
-    console.log(`${message} called`);
-  };
-}
-@logClass('Class decorator')
-class Person {
-  private _directReports: Person[];
-
-  @logProperty('Property Decorator')
-  public emailAddress: string;
-
-  constructor(public firstName: string, public lastName: string) {
-    this._directReports = [];
+class APIRoutes {
+  @route('get', '/')
+  @logRoute()
+  public indexRoute(req: Request, res: Response) {
+    return {
+      Hello: 'World',
+    };
   }
 
-  @logMethod('Method decorator')
-  @logMethod('Method decorator 2')
-  public addDirectReport(@logParameter('Parameter Decorator') person: Person) {
-    this._directReports.push(person);
+  @route('get', '/people')
+  @logRoute()
+  @authenticate('123456')
+  public peopleRoute(req: Request, res: Response) {
+    return {
+      people: [
+        { firstName: 'David', lastName: 'Tucker' },
+        { firstName: 'Sammy', lastName: 'Davis' },
+      ],
+    };
   }
 }
 
-const person = new Person('Nick', 'Vanden Eynde');
+function route(method: string, path: string): MethodDecorator {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    server.app[method](path, (req: Request, res: Response) => {
+      res.status(200).json(descriptor.value(req, res));
+    });
+  };
+}
+
+function logRoute(): MethodDecorator {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      const req = args[0] as Request;
+      console.log(`${req.url} ${req.method} Called`);
+
+      return original.apply(this, args);
+    };
+  };
+}
+
+function authenticate(key: string): MethodDecorator {
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      const req = args[0] as Request;
+      const res = args[1] as Response;
+      const headers = req.headers;
+      if (headers.hasOwnProperty('apikey') && headers.apikey == key) {
+        return original.apply(this, args);
+      }
+      res.status(403).json({ error: 'Not Authorized' });
+    };
+  };
+}
+
+server.start();
