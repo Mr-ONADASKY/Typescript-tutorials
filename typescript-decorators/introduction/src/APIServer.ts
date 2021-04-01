@@ -1,8 +1,6 @@
 import * as http from 'http';
 import express, { Express } from 'express';
 import bodyParser from 'body-parser';
-import EntityRouter from './EntityRouter';
-import BaseEntity from './entities/BaseEntity';
 
 export default class APIServer {
   private _app: Express;
@@ -43,12 +41,6 @@ export default class APIServer {
       );
       next();
     });
-  }
-
-  public addEntity<T extends BaseEntity>(clazz) {
-    const name = Reflect.getMetadata('entity:name', clazz);
-    const entityRouter = new EntityRouter<T>(name, clazz);
-    this._app.use(`/${name}`, entityRouter.router);
   }
 
   public start() {

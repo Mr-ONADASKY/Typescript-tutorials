@@ -1,0 +1,13 @@
+{
+    "people": {
+        "b4759f58-e545-4ef9-bcf6-8de2ac451fbd": {
+            "id": "b4759f58-e545-4ef9-bcf6-8de2ac451fbd",
+            "firstName": "David",
+            "lastName": "Tucker",
+            "email": "david@globomantics.com",
+            "department": "IT",
+            "mobileNumber": "+15555555",
+            "age": 38
+        }
+    }
+}
