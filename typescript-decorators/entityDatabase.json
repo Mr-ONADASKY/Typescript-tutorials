@@ -1,31 +1,32 @@
 {
-    "people": {
-        "b4759f58-e545-4ef9-bcf6-8de2ac451fbd": {
-            "id": "b4759f58-e545-4ef9-bcf6-8de2ac451fbd",
-            "firstName": "David",
-            "lastName": "Tucker",
-            "email": "david@globomantics.com",
-            "department": "IT",
-            "mobileNumber": "+15555555",
-            "age": 38
+    "people": {},
+    "users": {
+        "david": {
+            "password": "mypassword",
+            "permissions": {
+                "people": [
+                    "reader",
+                    "writer"
+                ]
+            }
         },
-        "4d9e8802-28d1-45d9-895c-45681a4400c1": {
-            "id": "4d9e8802-28d1-45d9-895c-45681a4400c1",
-            "firstName": "David",
-            "lastName": "Tucker",
-            "email": "david@globomantics.com",
-            "department": "IT",
-            "mobileNumber": "+15555555",
-            "age": 38
+        "jessi": {
+            "password": "mypassword",
+            "permissions": {
+                "people": [
+                    "reader"
+                ]
+            }
         },
-        "0c5ed8cc-9b9a-475d-92d2-f9de127b929d": {
-            "id": "0c5ed8cc-9b9a-475d-92d2-f9de127b929d",
-            "firstName": "David",
-            "lastName": "Tucker",
-            "email": "david@globomantics.com",
-            "department": "IT",
-            "mobileNumber": "15555555",
-            "age": 120
+        "dallin": {
+            "password": "mypassword",
+            "permissions": {
+                "people": [
+                    "reader",
+                    "writer",
+                    "deleter"
+                ]
+            }
         }
     }
 }
