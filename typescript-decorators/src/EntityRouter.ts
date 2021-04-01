@@ -2,7 +2,7 @@ import { db } from './app';
 import * as uuid from 'uuid';
 import express, { Router, Request, Response } from 'express';
 import BaseEntity, { EntityTypeInstance, EntityFactory } from './entities/BaseEntity';
-import { logRoute } from './decorators';
+import { logRoute, validate } from './decorators';
 
 export default class EntityRouter<T extends BaseEntity> {
   private _router: Router;
@@ -60,6 +60,13 @@ export default class EntityRouter<T extends BaseEntity> {
   @logRoute
   private createEntity(req: Request, res: Response) {
     const newEntity = EntityFactory.fromPersistenceObject<T>(req.body, this.classRef);
+    const errorMap = validate(newEntity);
+    if (Object.keys(errorMap).length > 0) {
+      const output = { errors: errorMap };
+      res.status(400).json(output);
+
+      return;
+    }
     const idProperty = Reflect.getMetadata('entity:id', newEntity);
     newEntity[idProperty] = uuid.v4();
     db.push(`/${this.name}/${newEntity[idProperty]}`, newEntity.getPersistenceObject());
@@ -68,7 +75,37 @@ export default class EntityRouter<T extends BaseEntity> {
 
   @logRoute
   private updateEntity(req: Request, res: Response) {
-    // TODO - Implement updating object
+    // Does entity exist with ID
+    let data = {};
+    try {
+      data = db.getData(`/${this.name}/${req.params.id}`);
+    } catch (err) {
+      res.status(404).json({ error: 'Object does not exist' });
+
+      return;
+    }
+
+    // Update Object with new values
+    const updatedData = req.body;
+    const updatedObj = EntityFactory.fromPersistenceObject(data, this.classRef);
+    const propKeys = Object.keys(updatedData);
+    for (const propKey of propKeys) {
+      updatedObj[propKey] = updatedData[propKey];
+    }
+
+    // Validate
+    const errorMap = validate(updatedObj);
+    if (Object.keys(errorMap).length > 0) {
+      const output = { errors: errorMap };
+      res.status(400).json(output);
+
+      return;
+    }
+
+    // Save and Return data
+    db.push(`/${this.name}/${req.params.id}`, updatedData, false);
+    data = db.getData(`/${this.name}/${req.params.id}`);
+    res.json(data);
   }
 
   @logRoute
